@@ -7,11 +7,14 @@ import java.io.Serializable;
 import lombok.*;
 import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpStatus;
+import tools.jackson.databind.PropertyNamingStrategies;
+import tools.jackson.databind.annotation.JsonNaming;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class ResponseMessage<T extends @Nullable Object> implements Serializable {
 
     @JsonIgnore
