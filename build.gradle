@@ -41,8 +41,6 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-micrometer-tracing-opentelemetry'
 	implementation 'io.micrometer:micrometer-tracing-bridge-otel'
 
-	implementation 'io.github.thibaultmeyer:cuid:2.0.5'
-
 }
 
 
