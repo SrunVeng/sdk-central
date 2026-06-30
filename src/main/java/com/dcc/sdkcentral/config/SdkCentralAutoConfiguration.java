@@ -7,5 +7,4 @@ import org.springframework.context.annotation.ComponentScan;
 @AutoConfiguration
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @ComponentScan(basePackages = "com.dcc.sdkcentral")
-public class SdkCentralAutoConfiguration {
-}
+public class SdkCentralAutoConfiguration {}
