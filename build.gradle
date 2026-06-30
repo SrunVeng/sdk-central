@@ -7,7 +7,7 @@ plugins {
 }
 
 group = 'com.dcc'
-version = '1.0.4'
+version = '1.0.5'
 
 base {
 	archivesName = 'sdk-central'
