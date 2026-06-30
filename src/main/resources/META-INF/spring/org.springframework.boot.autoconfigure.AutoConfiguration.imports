@@ -1,1 +1,1 @@
-com.dcc.sdkcentral.config.SdkHttpClientAutoConfiguration
+com.dcc.sdkcentral.autoconfigure.SdkCentralAutoConfiguration
