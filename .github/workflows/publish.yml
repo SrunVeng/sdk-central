@@ -1,6 +1,7 @@
 name: Publish SDK
 
 on:
+  workflow_dispatch:
   push:
     tags:
       - "v*"
@@ -17,14 +18,21 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 21
+          cache: gradle
+
+      - name: Verify
+        run: ./gradlew clean spotlessCheck test
 
       - name: Publish package
-        run: ./gradlew clean publish
+        run: ./gradlew publish
         env:
           GITHUB_ACTOR: ${{ github.actor }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
