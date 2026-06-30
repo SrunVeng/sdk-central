@@ -1,3 +1,15 @@
 spring:
   application:
     name: sdkcentral
+
+
+management:
+  tracing:
+    enabled: true
+    sampling:
+      probability: 1.0
+
+logging:
+  include-application-name: false
+  pattern:
+    correlation: "[${spring.application.name:},%X{traceId:-},%X{spanId:-}] "

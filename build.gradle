@@ -2,6 +2,7 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '4.1.0'
 	id 'io.spring.dependency-management' version '1.1.7'
+	id "com.diffplug.spotless" version "8.6.0"
 }
 
 group = 'com.dcc'
@@ -18,20 +19,45 @@ repositories {
 }
 
 dependencies {
+
+	//Springboot Core
 	implementation 'org.springframework.boot:spring-boot-starter-webmvc'
+	testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+	//Lombok
+	testCompileOnly 'org.projectlombok:lombok'
+	testAnnotationProcessor 'org.projectlombok:lombok'
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
-	testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
-	testCompileOnly 'org.projectlombok:lombok'
-	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-	testAnnotationProcessor 'org.projectlombok:lombok'
+
 	// Mapstruct
 	compileOnly 'org.mapstruct:mapstruct:1.6.3'
 	annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.3'
 	implementation 'com.fasterxml.jackson.core:jackson-databind'
+
+	//Trace
 	implementation 'io.micrometer:micrometer-registry-prometheus'
+	implementation 'org.springframework.boot:spring-boot-micrometer-tracing-opentelemetry'
+	implementation 'io.micrometer:micrometer-tracing-bridge-otel'
+
+	implementation 'io.github.thibaultmeyer:cuid:2.0.5'
+
 }
 
-tasks.named('test') {
-	useJUnitPlatform()
+
+spotless {
+	java {
+		palantirJavaFormat()
+		importOrder()
+		removeUnusedImports()
+		trimTrailingWhitespace()
+		endWithNewline()
+
+	}
+
+	tasks.named('test') {
+		useJUnitPlatform()
+	}
+
 }
