@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
-
 @Component
 @RequiredArgsConstructor
 public class ResponseMessageBuilder<T> {
@@ -34,16 +33,16 @@ public class ResponseMessageBuilder<T> {
                 .build();
     }
 
-    public ResponseMessage<@Nullable Object> failed() {
-        return ResponseMessage.<@Nullable Object>builder()
-                .message(DevErrorConstant.SUCCESS)
-                .messageType(MessageType.SUCCESS)
-                .errorCode(ApiErrorCode.SUCCESS)
+    public ResponseMessage<T> failed() {
+        return ResponseMessage.<T>builder()
+                .message(DevErrorConstant.GENERAL_ERROR)
+                .messageType(MessageType.ERROR)
+                .errorCode(ApiErrorCode.GENERAL_ERROR)
                 .traceId(traceIdUtils.getTraceId())
                 .source(applicationName)
-                .devErrorCode(ApiErrorCode.SUCCESS)
-                .devMessage(DevErrorConstant.SUCCESS)
-                .status(HttpStatus.OK)
+                .devErrorCode(ApiErrorCode.GENERAL_ERROR)
+                .devMessage(DevErrorConstant.GENERAL_ERROR)
+                .status(HttpStatus.BAD_REQUEST)
                 .data(null)
                 .build();
     }

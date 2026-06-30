@@ -11,5 +11,5 @@ public final class ApiErrorCode {
     private ApiErrorCode() {}
 
     public static final String SUCCESS = "200";
-    public static final String GENERAL_ERROR = "600";
+    public static final String GENERAL_ERROR = "500";
 }
