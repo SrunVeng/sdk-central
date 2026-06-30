@@ -8,10 +8,7 @@ public class TestController {
 
     @GetMapping("/test/success")
     public TestResponse success() {
-        return new TestResponse(
-                "SDK Central",
-                "Success response is working"
-        );
+        return new TestResponse("SDK Central", "Success response is working");
     }
 
     @GetMapping("/test/failed")
@@ -24,9 +21,5 @@ public class TestController {
         throw new RuntimeException("Something went wrong");
     }
 
-    public record TestResponse(
-            String name,
-            String message
-    ) {
-    }
+    public record TestResponse(String name, String message) {}
 }

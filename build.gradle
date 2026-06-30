@@ -1,20 +1,27 @@
 plugins {
-	id 'java'
-	id 'org.springframework.boot' version '4.1.0'
-	id 'io.spring.dependency-management' version '1.1.7'
-	id "com.diffplug.spotless" version "8.6.0"
 	id 'java-library'
 	id 'maven-publish'
+	id 'org.springframework.boot' version '4.1.0'
+	id 'io.spring.dependency-management' version '1.1.7'
+	id 'com.diffplug.spotless' version '8.6.0'
 }
 
 group = 'com.dcc'
-version = '1.0.0'
+
+def tagName = System.getenv('GITHUB_REF_NAME')
+version = findProperty('sdkVersion') ?: (tagName?.startsWith('v') ? tagName.substring(1) : '1.0.0-SNAPSHOT')
+
+base {
+	archivesName = 'sdk-central'
+}
 
 java {
 	toolchain {
 		languageVersion = JavaLanguageVersion.of(21)
 	}
+
 	withSourcesJar()
+	withJavadocJar()
 }
 
 repositories {
@@ -22,32 +29,108 @@ repositories {
 }
 
 dependencies {
+	api 'org.springframework.boot:spring-boot-starter-webmvc'
+	api 'com.fasterxml.jackson.core:jackson-annotations'
+	api 'io.micrometer:micrometer-tracing'
+	api 'org.jspecify:jspecify:1.0.0'
 
-	api 'org.springframework.boot:spring-boot-autoconfigure:3.3.5'
-	api 'org.springframework.boot:spring-boot-starter-web:3.3.5'
-	//Springboot Core
-	implementation 'org.springframework.boot:spring-boot-starter-webmvc'
-	testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
-	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-
-	//Lombok
-	testCompileOnly 'org.projectlombok:lombok'
-	testAnnotationProcessor 'org.projectlombok:lombok'
-	compileOnly 'org.projectlombok:lombok'
-	annotationProcessor 'org.projectlombok:lombok'
-
-	// Mapstruct
-	compileOnly 'org.mapstruct:mapstruct:1.6.3'
-	annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.3'
-	implementation 'com.fasterxml.jackson.core:jackson-databind'
-
-	//Trace
 	implementation 'io.micrometer:micrometer-registry-prometheus'
 	implementation 'org.springframework.boot:spring-boot-micrometer-tracing-opentelemetry'
 	implementation 'io.micrometer:micrometer-tracing-bridge-otel'
 
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+	annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+
+	compileOnly 'org.mapstruct:mapstruct:1.6.3'
+	annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.3'
+
+	testCompileOnly 'org.projectlombok:lombok'
+	testAnnotationProcessor 'org.projectlombok:lombok'
+	testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
+tasks.named('bootJar') {
+	enabled = false
+}
+
+tasks.named('jar') {
+	enabled = true
+	archiveClassifier = ''
+	exclude('application*.yaml')
+	exclude('com/dcc/sdkcentral/SdkcentralApplication.class')
+	exclude('com/dcc/sdkcentral/TestController*.class')
+	manifest {
+		attributes(
+				'Implementation-Title': project.name,
+				'Implementation-Version': project.version
+		)
+	}
+}
+
+tasks.named('sourcesJar') {
+	exclude('application*.yaml')
+	exclude('com/dcc/sdkcentral/SdkcentralApplication.java')
+	exclude('com/dcc/sdkcentral/TestController.java')
+}
+
+tasks.named('javadoc') {
+	exclude('com/dcc/sdkcentral/SdkcentralApplication.java')
+	exclude('com/dcc/sdkcentral/TestController.java')
+	options.addStringOption('Xdoclint:none', '-quiet')
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
+
+publishing {
+	publications {
+		mavenJava(MavenPublication) {
+			from components.java
+			artifactId = 'sdk-central'
+
+			versionMapping {
+				usage('java-api') {
+					fromResolutionOf('runtimeClasspath')
+				}
+				usage('java-runtime') {
+					fromResolutionResult()
+				}
+			}
+
+			pom {
+				name = 'SDK Central'
+				description = 'Shared Spring Boot SDK for DCC microservices.'
+			}
+		}
+	}
+
+	repositories {
+		maven {
+			def configuredUrl = findProperty('mavenRepoUrl') ?: System.getenv('MAVEN_REPO_URL')
+			def repoUsername = findProperty('mavenRepoUsername') ?: System.getenv('MAVEN_REPO_USERNAME') ?: System.getenv('GITHUB_ACTOR')
+			def repoPassword = findProperty('mavenRepoPassword') ?: System.getenv('MAVEN_REPO_PASSWORD') ?: System.getenv('GITHUB_TOKEN')
+			def githubRepository = System.getenv('GITHUB_REPOSITORY')
+			def canPublishToGitHubPackages = githubRepository && repoUsername && repoPassword
+
+			name = configuredUrl ? 'remote' : (canPublishToGitHubPackages ? 'GitHubPackages' : 'localBuild')
+			url = configuredUrl
+					? uri(configuredUrl)
+					: (canPublishToGitHubPackages
+							? uri("https://maven.pkg.github.com/${githubRepository}")
+							: layout.buildDirectory.dir('repo').get().asFile.toURI())
+
+			if (repoUsername && repoPassword) {
+				credentials {
+					username = repoUsername
+					password = repoPassword
+				}
+			}
+		}
+	}
+}
 
 spotless {
 	java {
@@ -56,35 +139,5 @@ spotless {
 		removeUnusedImports()
 		trimTrailingWhitespace()
 		endWithNewline()
-
 	}
-
-	tasks.named('test') {
-		useJUnitPlatform()
-	}
-
-	publishing {
-		publications {
-			mavenJava(MavenPublication) {
-				from components.java
-
-				groupId = 'com.dcc'
-				artifactId = 'sdk-central'
-				version = '1.0.0'
-			}
-		}
-
-		repositories {
-			maven {
-				name = "GitHubPackages"
-				url = uri("https://maven.pkg.github.com/srun_veng/sdk-central")
-				credentials {
-					username = System.getenv("GITHUB_ACTOR")
-					password = System.getenv("GITHUB_TOKEN")
-				}
-			}
-		}
-}
-
-
 }

@@ -1,12 +1,11 @@
 package com.dcc.sdkcentral.properties;
 
-import lombok.Getter;
-import lombok.Setter;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @Getter
 @Setter
@@ -28,14 +27,10 @@ public class SdkHttpClientProperties {
     }
 
     public Duration resolveConnectTimeout(ClientConfig clientConfig) {
-        return clientConfig.getConnectTimeout() != null
-                ? clientConfig.getConnectTimeout()
-                : defaultConnectTimeout;
+        return clientConfig.getConnectTimeout() != null ? clientConfig.getConnectTimeout() : defaultConnectTimeout;
     }
 
     public Duration resolveReadTimeout(ClientConfig clientConfig) {
-        return clientConfig.getReadTimeout() != null
-                ? clientConfig.getReadTimeout()
-                : defaultReadTimeout;
+        return clientConfig.getReadTimeout() != null ? clientConfig.getReadTimeout() : defaultReadTimeout;
     }
 }
