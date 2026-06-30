@@ -1,9 +1,0 @@
-spring:
-  application:
-    name: sdkcentral
-
-
-logging:
-  include-application-name: false
-  pattern:
-    correlation: "[${spring.application.name:},%X{traceId:-},%X{spanId:-}] "
